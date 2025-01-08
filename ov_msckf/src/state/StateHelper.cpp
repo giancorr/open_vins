@@ -60,7 +60,6 @@ void StateHelper::EKFPropagation(std::shared_ptr<State> state, const std::vector
   for (size_t i = 0; i < order_OLD.size() - 1; i++) {
     size_order_OLD += order_OLD.at(i + 1)->size();
   }
-
   // Assert that we have correct sizes
   assert(size_order_NEW == Phi.rows());
   assert(size_order_OLD == Phi.cols());
@@ -113,9 +112,87 @@ void StateHelper::EKFPropagation(std::shared_ptr<State> state, const std::vector
   }
 }
 
-void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std::shared_ptr<Type>> &H_order, const Eigen::MatrixXd &H,
-                            const Eigen::VectorXd &res, const Eigen::MatrixXd &R) {
+std::vector<double> StateHelper::movingAverage( const std::vector<double>& signal, int windowSize ) {
+    
+    std::vector<double> filteredSignal;
+    std::deque<double> window;
+    double sum = 0.0;
 
+    for (size_t i = 0; i < signal.size(); ++i) {
+        // Aggiungi il valore corrente
+        window.push_back(signal[i]);
+        sum += signal[i];
+
+        // Rimuovi il valore più vecchio se la finestra è piena
+        if (window.size() > windowSize) {
+            sum -= window.front();
+            window.pop_front();
+        }
+
+        // Aggiungi la media al segnale filtrato
+        filteredSignal.push_back(sum / window.size());
+    }
+
+    return filteredSignal;
+
+}
+
+void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std::shared_ptr<Type>> &H_order, const Eigen::MatrixXd &H,
+                            const Eigen::VectorXd &res, const Eigen::MatrixXd &R, const bool SLAM) {
+
+  //  PRINT_DEBUG(YELLOW "[H DIM]: rows: %d, cols:%d\n", H.rows(), H.cols());
+  // Eigen::MatrixXd H_t_H = H.transpose()*H;
+
+  const int idx_pose_start = 0;
+  const int idx_pose_end = 8;
+  Eigen::MatrixXd P_pose =state->_Cov.block(idx_pose_start, idx_pose_start, idx_pose_end + 1, idx_pose_end + 1);
+  Eigen::MatrixXd H_pose = H.block(0, idx_pose_start, H.rows(), idx_pose_end + 1);
+  if( !SLAM ) {
+    // std::cout<<"=================NEW PRINT====================\n";
+    // std::cout<<"[H_mult DIM]: rows: "<<H_t_H.rows()<<", cols: "<<H_t_H.cols()<<"\n";
+    // std::cout<<"[H DIM]: rows: "<<H.rows()<<", cols: "<<H.cols()<<"\n";
+    // std::cout<<"[H ORD SIZE]: size: "<<H_order.size()<<"\n";
+    // std::cout<<"[H pose DIM]: rows: "<<H_pose.rows()<<", cols: "<<H_pose.cols()<<"\n";
+    // std::cout<<"[R DIM]: rows: "<<R.rows()<<", cols: "<<R.cols()<<"\n";
+    // std::cout<<"[Res DIM]: rows: "<<res.rows()<<", cols: "<<res.cols()<<"\n";
+    // std::cout<<"[P DIM]: rows: "<<state->_Cov.rows()<<", cols: "<<state->_Cov.cols()<<"\n";
+    // std::cout<<"[P pose DIM]: rows: "<<P_pose.rows()<<", cols: "<<P_pose.cols()<<"\n";
+  }
+
+  //================Prova calcolo metriche=====================//
+  Eigen::Matrix<double, idx_pose_end+1, idx_pose_end+1>  P_inv;
+  P_inv = P_pose.inverse();
+  Eigen::Matrix<double, idx_pose_end+1, idx_pose_end+1> J_new;
+  J_new = H_pose.transpose()*R*H_pose + P_inv;
+  Eigen::EigenSolver<Eigen::MatrixXd> eigsolver_J;
+  eigsolver_J.compute(J_new);
+  Eigen::VectorXd eigen_values_J  = eigsolver_J.eigenvalues().real();
+  Eigen::MatrixXd eigen_vectors_J = eigsolver_J.eigenvectors().real();
+  int num_eigen_J = eigen_values_J.size();
+  state->_degen_factor.resize( num_eigen_J );
+  std::vector<double> eigen_ordered_J;
+  /*Ordering Eigenvalues of J*/
+  for (int i = 0; i < num_eigen_J; i++) {
+      double eig_J = 0;
+      double vec_J = 0;
+      for (int j = 0; j < eigen_vectors_J.cols(); j++) {
+      if (abs(eigen_vectors_J(i, j)) > vec_J) {
+          vec_J = abs(eigen_vectors_J(i, j));
+          eig_J = eigen_values_J(j);
+      }
+      }
+      // msg_eigenvalue_J.data.push_back(eig_J);
+      eigen_ordered_J.push_back(eig_J);
+      state->_degen_factor[i] = eig_J;
+  }
+
+  /*Print*/
+  // std::cout<<"=================NEW PRINT====================\n";
+  // for(int i = 0; i < num_eigen_J; i++) {
+    
+  //   std::cout<<eigen_ordered_J[i]<<", ";
+  // }
+  // std::cout<<"\n";
   //==========================================================
   //==========================================================
   // Part of the Kalman Gain K = (P*H^T)*S^{-1} = M*S^{-1}
@@ -148,20 +225,22 @@ void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std:
   //==========================================================
   //==========================================================
   // Get covariance of the involved terms
-  Eigen::MatrixXd P_small = StateHelper::get_marginal_covariance(state, H_order);
-
+  Eigen::MatrixXd P_small = StateHelper::get_marginal_covariance(state, H_order); //VS: qui si ricava la matrice di covarianza dei termini che vengono usati per l'aggiornamento (stati + cloni)
+  // if(!SLAM)
+  //   std::cout<<"[P small DIM]: rows: "<<P_small.rows()<<", cols: "<<P_small.cols()<<"\n";
   // Residual covariance S = H*Cov*H' + R
   Eigen::MatrixXd S(R.rows(), R.rows());
   S.triangularView<Eigen::Upper>() = H * P_small * H.transpose();
   S.triangularView<Eigen::Upper>() += R;
   // Eigen::MatrixXd S = H * P_small * H.transpose() + R;
-
+  // std::cout<<"[S DIM]: rows: "<<S.rows()<<", cols: "<<S.cols()<<"\n";
   // Invert our S (should we use a more stable method here??)
   Eigen::MatrixXd Sinv = Eigen::MatrixXd::Identity(R.rows(), R.rows());
   S.selfadjointView<Eigen::Upper>().llt().solveInPlace(Sinv);
   Eigen::MatrixXd K = M_a * Sinv.selfadjointView<Eigen::Upper>();
   // Eigen::MatrixXd K = M_a * S.inverse();
-
+  // if(!SLAM)
+  //   std::cout<<"[K DIM]: rows: "<<K.rows()<<", cols: "<<K.cols()<<"\n";
   // Update Covariance
   state->_Cov.triangularView<Eigen::Upper>() -= K * M_a.transpose();
   state->_Cov = state->_Cov.selfadjointView<Eigen::Upper>();
@@ -183,6 +262,8 @@ void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std:
 
   // Calculate our delta and update all our active states
   Eigen::VectorXd dx = K * res;
+  // std::cout<<"/=======================/\n";
+  // std::cout<<"[dx DIM]: rows= "<<dx.rows()<<", cols= "<<dx.cols()<<"\n";
   for (size_t i = 0; i < state->_variables.size(); i++) {
     state->_variables.at(i)->update(dx.block(state->_variables.at(i)->id(), 0, state->_variables.at(i)->size(), 1));
   }
@@ -347,11 +428,13 @@ std::shared_ptr<Type> StateHelper::clone(std::shared_ptr<State> state, std::shar
 
   // Resize both our covariance to the new size
   state->_Cov.conservativeResizeLike(Eigen::MatrixXd::Zero(old_size + total_size, old_size + total_size));
+  // std::cout<<"Clone size: "<<total_size<<"\n";
+  // std::cout<<"[DIM Cov] rows: "<<state->_Cov.rows()<<" cols: "<<state->_Cov.cols()<<"\n";
 
   // What is the new state, and variable we inserted
   const std::vector<std::shared_ptr<Type>> new_variables = state->_variables;
   std::shared_ptr<Type> new_clone = nullptr;
-
+  // std::cout<<"DIM Variables: "<<state->_variables.size()<<"\n";
   // Loop through all variables, and find the variable that we are going to clone
   for (size_t k = 0; k < state->_variables.size(); k++) {
 
@@ -476,7 +559,7 @@ bool StateHelper::initialize(std::shared_ptr<State> state, std::shared_ptr<Type>
 
   // Update with updating portion
   if (Hup.rows() > 0) {
-    StateHelper::EKFUpdate(state, H_order, Hup, resup, Rup);
+    StateHelper::EKFUpdate(state, H_order, Hup, resup, Rup, true);
   }
   return true;
 }
@@ -597,7 +680,7 @@ void StateHelper::augment_clone(std::shared_ptr<State> state, Eigen::Matrix<doub
 
   // Append the new clone to our clone vector
   state->_clones_IMU[state->_timestamp] = pose;
-
+//  std::cout<<"[DIM _clones_IMU]: "<<state->_clones_IMU.size()<<"\n"; MASSIMO 12
   // If we are doing time calibration, then our clones are a function of the time offset
   // Logic is based on Mingyang Li and Anastasios I. Mourikis paper:
   // http://journals.sagepub.com/doi/pdf/10.1177/0278364913515286

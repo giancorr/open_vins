@@ -67,9 +67,12 @@ void UpdaterMSCKF::update(std::shared_ptr<State> state, std::vector<std::shared_
 
   // 0. Get all timestamps our clones are at (and thus valid measurement times)
   std::vector<double> clonetimes;
+  int i = 0;
   for (const auto &clone_imu : state->_clones_IMU) {
     clonetimes.emplace_back(clone_imu.first);
+    i++;
   }
+  
 
   // 1. Clean all feature measurements and make sure they all have valid clone times
   auto it0 = feature_vec.begin();
@@ -149,13 +152,15 @@ void UpdaterMSCKF::update(std::shared_ptr<State> state, std::vector<std::shared_
       max_meas_size += 2 * feature_vec.at(i)->timestamps[pair.first].size();
     }
   }
-
   // Calculate max possible state size (i.e. the size of our covariance)
   // NOTE: that when we have the single inverse depth representations, those are only 1dof in size
   size_t max_hx_size = state->max_covariance_size();
   for (auto &landmark : state->_features_SLAM) {
     max_hx_size -= landmark.second->size();
   }
+
+  // std::cout<<"Max_meas_size: "<<max_meas_size<<"\n";
+  // std::cout<<"Max_hx_size: "<<max_hx_size<<"\n";
 
   // Large Jacobian and residual of *all* features for this update
   Eigen::VectorXd res_big = Eigen::VectorXd::Zero(max_meas_size);
@@ -165,6 +170,7 @@ void UpdaterMSCKF::update(std::shared_ptr<State> state, std::vector<std::shared_
   size_t ct_jacob = 0;
   size_t ct_meas = 0;
 
+ int cnt_while = 0;
   // 4. Compute linear system for each feature, nullspace project, and reject
   auto it2 = feature_vec.begin();
   while (it2 != feature_vec.end()) {
@@ -201,7 +207,8 @@ void UpdaterMSCKF::update(std::shared_ptr<State> state, std::vector<std::shared_
 
     // Get the Jacobian for this feature
     UpdaterHelper::get_feature_jacobian_full(state, feat, H_f, H_x, res, Hx_order);
-
+    // std::cout<<"=============Print NEW==============\n [H_f DIM]: rows="<<H_f.rows()<<" cols="<<H_f.cols()<<"\n";
+    // std::cout<<"[H_x DIM]: rows="<<H_x.rows()<<" cols="<<H_x.cols()<<"\n";
     // Nullspace project
     UpdaterHelper::nullspace_project_inplace(H_f, H_x, res);
 
@@ -271,8 +278,11 @@ void UpdaterMSCKF::update(std::shared_ptr<State> state, std::vector<std::shared_
   res_big.conservativeResize(ct_meas, 1);
   Hx_big.conservativeResize(ct_meas, ct_jacob);
 
+  // std::cout<<"[H_big DIM PRE]: rows: "<<Hx_big.rows()<<", cols: "<<Hx_big.cols()<<"\n";
   // 5. Perform measurement compression
   UpdaterHelper::measurement_compress_inplace(Hx_big, res_big);
+  // std::cout<<"[H_big DIM POST]: rows: "<<Hx_big.rows()<<", cols: "<<Hx_big.cols()<<"\n";
+
   if (Hx_big.rows() < 1) {
     return;
   }
@@ -280,11 +290,15 @@ void UpdaterMSCKF::update(std::shared_ptr<State> state, std::vector<std::shared_
 
   // Our noise is isotropic, so make it here after our compression
   Eigen::MatrixXd R_big = _options.sigma_pix_sq * Eigen::MatrixXd::Identity(res_big.rows(), res_big.rows());
-
+  bool slam = false;
   // 6. With all good features update the state
-  StateHelper::EKFUpdate(state, Hx_order_big, Hx_big, res_big, R_big);
+  StateHelper::EKFUpdate(state, Hx_order_big, Hx_big, res_big, R_big, slam);
   rT5 = boost::posix_time::microsec_clock::local_time();
-
+  // std::cout<<"/================================/\n Hx_big dimension, rows: "<<Hx_big.rows()<<", cols: "<<Hx_big.cols()<<"\n";
+  // Eigen::MatrixXd H_t_H = Hx_big.transpose()*Hx_big;
+  // std::cout<<"[H_mult DIM]: rows: "<<H_t_H.rows()<<", cols: "<<H_t_H.cols()<<"\n";
+  // Eigen::MatrixXd P = state->getCovariance();
+  // std::cout<<"[P DIM]: rows: "<<P.rows()<<", cols: "<<P.cols()<<"\n";
   // Debug print timing information
   PRINT_ALL("[MSCKF-UP]: %.4f seconds to clean\n", (rT1 - rT0).total_microseconds() * 1e-6);
   PRINT_ALL("[MSCKF-UP]: %.4f seconds to triangulate\n", (rT2 - rT1).total_microseconds() * 1e-6);

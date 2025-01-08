@@ -71,7 +71,7 @@ void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timest
   // We are going to sum up all the state transition matrices, so we can do a single large multiplication at the end
   // Phi_summed = Phi_i*Phi_summed
   // Q_summed = Phi_i*Q_summed*Phi_i^T + Q_i
-  // After summing we can multiple the total phi to get the updated covariance
+  // After summing we can multiply the total phi to get the updated covariance
   // We will then add the noise to the IMU portion of the state
   Eigen::MatrixXd Phi_summed = Eigen::MatrixXd::Identity(state->imu_intrinsic_size() + 15, state->imu_intrinsic_size() + 15);
   Eigen::MatrixXd Qd_summed = Eigen::MatrixXd::Zero(state->imu_intrinsic_size() + 15, state->imu_intrinsic_size() + 15);
@@ -127,6 +127,7 @@ void Propagator::propagate_and_clone(std::shared_ptr<State> state, double timest
       Phi_order.push_back(state->_calib_imu_ACCtoIMU);
     }
   }
+  // std::cout<<"Lo chiama il Propagator\n";
   StateHelper::EKFPropagation(state, Phi_order, Phi_order, Phi_summed, Qd_summed);
 
   // Set timestamp data
@@ -245,6 +246,8 @@ bool Propagator::fast_state_propagate(std::shared_ptr<State> state, double times
   Eigen::Vector4d q_Gtoi = cache_state_est.block(0, 0, 4, 1);
   Eigen::Vector3d v_iinG = cache_state_est.block(7, 0, 3, 1);
   Eigen::Vector3d p_iinG = cache_state_est.block(4, 0, 3, 1);
+  Eigen::Vector4d q_fake = Eigen::Matrix<double, 4, 1>::Zero();
+  Eigen::Vector3d p_fake = Eigen::Matrix<double, 3, 1>::Zero();
   state_plus.setZero();
   state_plus.block(0, 0, 4, 1) = q_Gtoi;
   state_plus.block(4, 0, 3, 1) = p_iinG;

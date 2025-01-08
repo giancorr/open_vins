@@ -269,11 +269,12 @@ bool UpdaterZeroVelocity::try_update(std::shared_ptr<State> state, double timest
       std::vector<std::shared_ptr<Type>> Phi_order;
       Phi_order.push_back(state->_imu->bg());
       Phi_order.push_back(state->_imu->ba());
+      // std::cout<<"Lo chiama UpdaterZeroVelocity\n";
       StateHelper::EKFPropagation(state, Phi_order, Phi_order, Phi_bias, Q_bias);
     }
 
     // Finally move the state time forward
-    StateHelper::EKFUpdate(state, Hx_order, H, res, R);
+    StateHelper::EKFUpdate(state, Hx_order, H, res, R, true);
     state->_timestamp = timestamp;
 
   } else {
@@ -318,7 +319,7 @@ bool UpdaterZeroVelocity::try_update(std::shared_ptr<State> state, double timest
     R.block(6, 6, 3, 3) *= std::pow(1e-1, 2);
 
     // finally update and remove the old clone
-    StateHelper::EKFUpdate(state, Hx_order, H, res, R);
+    StateHelper::EKFUpdate(state, Hx_order, H, res, R, true);
     StateHelper::marginalize(state, state->_clones_IMU.at(time1_cam));
     state->_clones_IMU.erase(time1_cam);
   }

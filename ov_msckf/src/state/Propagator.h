@@ -107,7 +107,7 @@ public:
    * @param state Pointer to state
    * @param timestamp Time to propagate to and clone at (CAM clock frame)
    */
-  void propagate_and_clone(std::shared_ptr<State> state, double timestamp);
+  void propagate_and_clone(std::shared_ptr<State> state, double timestamp);//PROPAGATOR
 
   /**
    * @brief Gets what the state and its covariance will be at a given timestamp
@@ -123,7 +123,7 @@ public:
    * @return True if we were able to propagate the state to the current timestep
    */
   bool fast_state_propagate(std::shared_ptr<State> state, double timestamp, Eigen::Matrix<double, 13, 1> &state_plus,
-                            Eigen::Matrix<double, 12, 12> &covariance);
+                            Eigen::Matrix<double, 12, 12> &covariance);//PROPAGATOR
 
   /**
    * @brief Helper function that given current imu data, will select imu readings between the two times.
@@ -237,7 +237,7 @@ protected:
    * @param Qd Discrete-time noise covariance over the interval
    */
   void predict_and_compute(std::shared_ptr<State> state, const ov_core::ImuData &data_minus, const ov_core::ImuData &data_plus,
-                           Eigen::MatrixXd &F, Eigen::MatrixXd &Qd);
+                           Eigen::MatrixXd &F, Eigen::MatrixXd &Qd);//PROPAGATOR
 
   /**
    * @brief Discrete imu mean propagation.
@@ -294,7 +294,7 @@ protected:
    */
   void predict_mean_rk4(std::shared_ptr<State> state, double dt, const Eigen::Vector3d &w_hat1, const Eigen::Vector3d &a_hat1,
                         const Eigen::Vector3d &w_hat2, const Eigen::Vector3d &a_hat2, Eigen::Vector4d &new_q, Eigen::Vector3d &new_v,
-                        Eigen::Vector3d &new_p);
+                        Eigen::Vector3d &new_p); //PROPAGATOR used with our configuration
 
   /**
    * @brief Analytically compute the integration components based on ACI^2

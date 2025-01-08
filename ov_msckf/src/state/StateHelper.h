@@ -86,7 +86,7 @@ public:
    * @param R Updating measurement covariance
    */
   static void EKFUpdate(std::shared_ptr<State> state, const std::vector<std::shared_ptr<ov_type::Type>> &H_order, const Eigen::MatrixXd &H,
-                        const Eigen::VectorXd &res, const Eigen::MatrixXd &R);
+                        const Eigen::VectorXd &res, const Eigen::MatrixXd &R, const bool SLAM);
 
   /**
    * @brief This will set the initial covaraince of the specified state elements.
@@ -228,6 +228,13 @@ public:
    * @param state Pointer to state
    */
   static void marginalize_slam(std::shared_ptr<State> state);
+
+  /**
+   * @brief Moving average filter
+   * @param signal Vector to be filtered
+   * @param windowSize Dimension of the moving window
+   */
+  static std::vector<double> movingAverage( const std::vector<double>& signal, int windowSize );
 
 private:
   /**

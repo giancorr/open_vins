@@ -52,6 +52,10 @@ ROS1Visualizer::ROS1Visualizer(std::shared_ptr<ros::NodeHandle> nh, std::shared_
   pub_pathimu = nh->advertise<nav_msgs::Path>("pathimu", 2);
   PRINT_DEBUG("Publishing: %s\n", pub_pathimu.getTopic().c_str());
 
+  // Setup degeneracy facto publisher
+  pub_degen = nh->advertise<std_msgs::Float32MultiArray>("degen_factor", 2);
+  PRINT_DEBUG("Publishing: %s\n", pub_degen.getTopic().c_str());
+
   // 3D points publishing
   pub_points_msckf = nh->advertise<sensor_msgs::PointCloud2>("points_msckf", 2);
   PRINT_DEBUG("Publishing: %s\n", pub_points_msckf.getTopic().c_str());
@@ -347,6 +351,22 @@ void ROS1Visualizer::visualize_odometry(double timestamp) {
       mTfBr->sendTransform(trans_calib);
     }
   }
+
+  // Publish degeneracy factor
+  std_msgs::Float32MultiArray msg_eigenvalue;
+  std::vector<double> degen_factor = state->get_degen_factor();
+  msg_eigenvalue.data.resize( degen_factor.size() );
+  for( int i = 0; i < degen_factor.size(); i++ ) {
+    msg_eigenvalue.data[i] = degen_factor[i];
+  }
+  pub_degen.publish(msg_eigenvalue);
+  // std::cout<<"DIM in pubblicazione: "<<degen_factor.size()<<"\n";
+  // std::cout<<"=================NEW PRINT====================\n";
+  // for(int i = 0; i < degen_factor.size(); i++) {
+    
+  //   std::cout<<degen_factor[i]<<", ";
+  // }
+  // std::cout<<"\n";
 }
 
 void ROS1Visualizer::visualize_final() {
@@ -480,7 +500,7 @@ void ROS1Visualizer::callback_inertial(const sensor_msgs::Imu::ConstPtr &msg) {
         camera_queue.pop_front();
         auto rT0_2 = boost::posix_time::microsec_clock::local_time();
         double time_total = (rT0_2 - rT0_1).total_microseconds() * 1e-6;
-        PRINT_INFO(BLUE "[TIME]: %.4f seconds total (%.1f hz, %.2f ms behind)\n" RESET, time_total, 1.0 / time_total, update_dt);
+        // PRINT_INFO(BLUE "[TIME]: %.4f seconds total (%.1f hz, %.2f ms behind)\n" RESET, time_total, 1.0 / time_total, update_dt);
       }
     }
     thread_update_running = false;

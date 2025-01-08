@@ -466,8 +466,9 @@ void UpdaterSLAM::update(std::shared_ptr<State> state, std::vector<std::shared_p
   Hx_big.conservativeResize(ct_meas, ct_jacob);
   R_big.conservativeResize(ct_meas, ct_meas);
 
+  bool slam = false;
   // 5. With all good SLAM features update the state
-  StateHelper::EKFUpdate(state, Hx_order_big, Hx_big, res_big, R_big);
+  StateHelper::EKFUpdate(state, Hx_order_big, Hx_big, res_big, R_big, slam);
   rT3 = boost::posix_time::microsec_clock::local_time();
 
   // Debug print timing information
@@ -634,6 +635,7 @@ void UpdaterSLAM::perform_anchor_change(std::shared_ptr<State> state, std::share
   }
 
   // Perform covariance propagation
+  // std::cout<<"Lo chiama UpdaterSLAM\n";
   StateHelper::EKFPropagation(state, phi_order_NEW, phi_order_OLD, Phi, Q);
 
   // Set state from new feature

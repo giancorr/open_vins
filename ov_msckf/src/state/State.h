@@ -179,6 +179,10 @@ public:
   /// Rotation from accelerometer to the "IMU" gyroscope frame frame (rpng model)
   std::shared_ptr<ov_type::JPLQuat> _calib_imu_ACCtoIMU;
 
+  const Eigen::MatrixXd& getCovariance() const { return _Cov; }
+
+  const std::vector<double>& get_degen_factor() const { return _degen_factor; }
+
 private:
   // Define that the state helper is a friend class of this class
   // This will allow it to access the below functions which should normally not be called
@@ -190,6 +194,8 @@ private:
 
   /// Vector of variables
   std::vector<std::shared_ptr<ov_type::Type>> _variables;
+
+  std::vector<double> _degen_factor;
 };
 
 } // namespace ov_msckf
