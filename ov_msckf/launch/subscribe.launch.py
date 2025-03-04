@@ -22,7 +22,7 @@ launch_args = [
     ),
     DeclareLaunchArgument(
         name="config_path",
-        default_value="",
+        default_value="/root/ros2_ws/src/open_vins/config/rs_t265_ros2/estimator_config.yaml",
         description="path to estimator_config.yaml. If not given, determined based on provided 'config' above",
     ),
     DeclareLaunchArgument(

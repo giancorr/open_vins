@@ -165,6 +165,9 @@ void ROS2Visualizer::setup_subscribers(std::shared_ptr<ov_core::YamlParser> pars
   // We need a valid parser
   assert(parser != nullptr);
 
+  rclcpp::QoS qos_profile(10); // 10 è la dimensione della coda
+  qos_profile.best_effort();   // Imposta la politica di QoS su BEST_EFFORT
+
   // Create imu subscriber (handle legacy ros param info)
   std::string topic_imu;
   _node->declare_parameter<std::string>("topic_imu", "/imu0");

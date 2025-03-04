@@ -160,6 +160,8 @@ void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std:
   }
 
   //================Prova calcolo metriche=====================//
+  bool degen = false;
+  if( degen ) {
   Eigen::Matrix<double, idx_pose_end+1, idx_pose_end+1>  P_inv;
   P_inv = P_pose.inverse();
   Eigen::Matrix<double, idx_pose_end+1, idx_pose_end+1> J_new;
@@ -184,6 +186,7 @@ void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std:
       // msg_eigenvalue_J.data.push_back(eig_J);
       eigen_ordered_J.push_back(eig_J);
       state->_degen_factor[i] = eig_J;
+  }
   }
 
   /*Print*/
