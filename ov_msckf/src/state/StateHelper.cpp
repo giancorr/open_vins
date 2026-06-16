@@ -160,12 +160,12 @@ void StateHelper::EKFUpdate(std::shared_ptr<State> state, const std::vector<std:
   }
 
   //================Prova calcolo metriche=====================//
-  bool degen = false;
+  bool degen = true;
   if( degen ) {
   Eigen::Matrix<double, idx_pose_end+1, idx_pose_end+1>  P_inv;
   P_inv = P_pose.inverse();
   Eigen::Matrix<double, idx_pose_end+1, idx_pose_end+1> J_new;
-  J_new = H_pose.transpose()*R*H_pose + P_inv;
+  J_new = H_pose.transpose()*R.inverse()*H_pose + P_inv;
   Eigen::EigenSolver<Eigen::MatrixXd> eigsolver_J;
   eigsolver_J.compute(J_new);
   Eigen::VectorXd eigen_values_J  = eigsolver_J.eigenvalues().real();

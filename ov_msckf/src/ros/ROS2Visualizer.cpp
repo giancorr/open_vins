@@ -52,6 +52,10 @@ ROS2Visualizer::ROS2Visualizer(std::shared_ptr<rclcpp::Node> node, std::shared_p
   pub_pathimu = node->create_publisher<nav_msgs::msg::Path>("pathimu", 2);
   PRINT_DEBUG("Publishing: %s\n", pub_pathimu->get_topic_name());
 
+  // Degeneracy factor publisher
+  pub_degen = node->create_publisher<std_msgs::msg::Float32MultiArray>("degen_factor", 2);
+  PRINT_DEBUG("Publishing: %s\n", pub_degen->get_topic_name());
+
   // 3D points publishing
   pub_points_msckf = node->create_publisher<sensor_msgs::msg::PointCloud2>("points_msckf", 2);
   PRINT_DEBUG("Publishing: %s\n", pub_points_msckf->get_topic_name());
@@ -624,6 +628,18 @@ void ROS2Visualizer::publish_state() {
     }
   }
   pub_poseimu->publish(poseIinM);
+
+  // Publish degeneracy factor (eigenvalues of information matrix)
+  if (pub_degen->get_subscription_count() > 0) {
+      if (!state->get_degen_factor().empty()) {
+          std_msgs::msg::Float32MultiArray degen_msg;
+          degen_msg.data.resize(state->get_degen_factor().size());
+          for (size_t i = 0; i < state->get_degen_factor().size(); i++) {
+              degen_msg.data[i] = state->get_degen_factor()[i];
+          }
+          pub_degen->publish(degen_msg);
+      }
+  }
 
   //=========================================================
   //=========================================================
