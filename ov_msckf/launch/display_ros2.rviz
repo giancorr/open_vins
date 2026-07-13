@@ -1,290 +1,339 @@
 Panels:
-  - Class: rviz_common/Displays
-    Help Height: 0
-    Name: Displays
-    Property Tree Widget:
-      Expanded: ~
-      Splitter Ratio: 0.4882352948188782
-    Tree Height: 272
-  - Class: rviz_common/Selection
-    Name: Selection
-  - Class: rviz_common/Tool Properties
-    Expanded:
-      - /2D Nav Goal1
-      - /Publish Point1
-    Name: Tool Properties
-    Splitter Ratio: 0.5886790156364441
-  - Class: rviz_common/Views
-    Expanded:
-      - /Current View1
-    Name: Views
-    Splitter Ratio: 0.5
+- Class: rviz_common/Displays
+  Help Height: 0
+  Name: Displays
+  Property Tree Widget:
+    Expanded: null
+    Splitter Ratio: 0.4882352948188782
+  Tree Height: 272
+- Class: rviz_common/Selection
+  Name: Selection
+- Class: rviz_common/Tool Properties
+  Expanded:
+  - /2D Nav Goal1
+  - /Publish Point1
+  Name: Tool Properties
+  Splitter Ratio: 0.5886790156364441
+- Class: rviz_common/Views
+  Expanded:
+  - /Current View1
+  Name: Views
+  Splitter Ratio: 0.5
 Visualization Manager:
-  Class: ""
+  Class: ''
   Displays:
-    - Alpha: 0.5
-      Cell Size: 1
-      Class: rviz_default_plugins/Grid
-      Color: 160; 160; 164
-      Enabled: true
-      Line Style:
-        Line Width: 0.029999999329447746
-        Value: Lines
-      Name: Grid
-      Normal Cell Count: 0
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Plane: XY
-      Plane Cell Count: 10
-      Reference Frame: <Fixed Frame>
-      Value: true
-    - Class: rviz_default_plugins/TF
-      Enabled: true
-      Frame Timeout: 120
-      Frames:
-        All Enabled: true
-        cam0:
-          Value: true
-        global:
-          Value: true
+  - Alpha: 0.5
+    Cell Size: 1
+    Class: rviz_default_plugins/Grid
+    Color: 160; 160; 164
+    Enabled: true
+    Line Style:
+      Line Width: 0.029999999329447746
+      Value: Lines
+    Name: Grid
+    Normal Cell Count: 0
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+    Plane: XY
+    Plane Cell Count: 10
+    Reference Frame: <Fixed Frame>
+    Value: true
+  - Class: rviz_default_plugins/TF
+    Enabled: true
+    Frame Timeout: 120
+    Frames:
+      All Enabled: true
+      goal1:
+        Value: false
+      goal2:
+        Value: false
+      goal3:
+        Value: false
+      goal4:
+        Value: false
+      goal5:
+        Value: false
+      goal6:
+        Value: false
+      goal7:
+        Value: false
+      cam0:
+        Value: true
+      global:
+        Value: true
+      imu:
+        Value: true
+      truth:
+        Value: true
+    Marker Scale: 1
+    Name: TF
+    Show Arrows: false
+    Show Axes: true
+    Show Names: true
+    Tree:
+      global:
         imu:
-          Value: true
-        truth:
-          Value: true
-      Marker Scale: 1
-      Name: TF
-      Show Arrows: false
-      Show Axes: true
-      Show Names: true
-      Tree:
-        global:
-          imu:
-            cam0:
-              {}
-          truth:
-            {}
-      Update Interval: 0
+          cam0: {}
+        truth: {}
+    Update Interval: 0
+    Value: true
+  - Class: rviz_default_plugins/Image
+    Enabled: true
+    Max Value: 1
+    Median window: 5
+    Min Value: 0
+    Name: Image Tracks
+    Normalize Range: true
+    Queue Size: 10
+    Topic: /ov_msckf/trackhist
+    Unreliable: false
+    Value: true
+  - Class: rviz_default_plugins/Image
+    Enabled: false
+    Max Value: 1
+    Median window: 5
+    Min Value: 0
+    Name: Current Depths
+    Normalize Range: true
+    Queue Size: 10
+    Topic: /ov_msckf/loop_depth_colored
+    Unreliable: false
+    Value: false
+  - Alpha: 1
+    Buffer Length: 1
+    Class: rviz_default_plugins/Path
+    Color: 25; 255; 0
+    Enabled: true
+    Head Diameter: 0.30000001192092896
+    Head Length: 0.20000000298023224
+    Length: 0.30000001192092896
+    Line Style: Billboards
+    Line Width: 0.009999999776482582
+    Name: Path VIO
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+    Pose Color: 255; 85; 255
+    Pose Style: None
+    Radius: 0.029999999329447746
+    Shaft Diameter: 0.10000000149011612
+    Shaft Length: 0.10000000149011612
+    Topic: /ov_msckf/pathimu
+    Unreliable: false
+    Value: true
+  - Alpha: 1
+    Buffer Length: 1
+    Class: rviz_default_plugins/Path
+    Color: 0; 255; 255
+    Enabled: true
+    Head Diameter: 0.30000001192092896
+    Head Length: 0.20000000298023224
+    Length: 0.30000001192092896
+    Line Style: Billboards
+    Line Width: 0.009999999776482582
+    Name: Path GT
+    Offset:
+      X: 0
+      Y: 0
+      Z: 0
+    Pose Color: 255; 85; 255
+    Pose Style: None
+    Radius: 0.029999999329447746
+    Shaft Diameter: 0.10000000149011612
+    Shaft Length: 0.10000000149011612
+    Topic: /ov_msckf/pathgt
+    Unreliable: false
+    Value: true
+  - Alpha: 0.800000011920929
+    Autocompute Intensity Bounds: true
+    Autocompute Value Bounds:
+      Max Value: 10
+      Min Value: -10
       Value: true
-    - Class: rviz_default_plugins/Image
-      Enabled: true
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Image Tracks
-      Normalize Range: true
-      Queue Size: 10
-      Topic: /ov_msckf/trackhist
-      Unreliable: false
+    Axis: Z
+    Channel Name: intensity
+    Class: rviz_default_plugins/PointCloud2
+    Color: 252; 175; 62
+    Color Transformer: FlatColor
+    Decay Time: 0
+    Enabled: true
+    Invert Rainbow: false
+    Max Color: 255; 255; 255
+    Max Intensity: 4096
+    Min Color: 0; 0; 0
+    Min Intensity: 0
+    Name: MSCKF Points
+    Position Transformer: XYZ
+    Queue Size: 10
+    Selectable: true
+    Size (Pixels): 8
+    Size (m): 0.009999999776482582
+    Style: Points
+    Topic: /ov_msckf/points_msckf
+    Unreliable: false
+    Use Fixed Frame: true
+    Use rainbow: true
+    Value: true
+  - Alpha: 1
+    Autocompute Intensity Bounds: true
+    Autocompute Value Bounds:
+      Max Value: 10
+      Min Value: -10
       Value: true
-    - Class: rviz_default_plugins/Image
-      Enabled: false
-      Max Value: 1
-      Median window: 5
-      Min Value: 0
-      Name: Current Depths
-      Normalize Range: true
-      Queue Size: 10
-      Topic: /ov_msckf/loop_depth_colored
-      Unreliable: false
-      Value: false
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz_default_plugins/Path
-      Color: 25; 255; 0
-      Enabled: true
-      Head Diameter: 0.30000001192092896
-      Head Length: 0.20000000298023224
-      Length: 0.30000001192092896
-      Line Style: Billboards
-      Line Width: 0.009999999776482582
-      Name: Path VIO
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.029999999329447746
-      Shaft Diameter: 0.10000000149011612
-      Shaft Length: 0.10000000149011612
-      Topic: /ov_msckf/pathimu
-      Unreliable: false
+    Axis: Z
+    Channel Name: intensity
+    Class: rviz_default_plugins/PointCloud2
+    Color: 117; 80; 123
+    Color Transformer: FlatColor
+    Decay Time: 0
+    Enabled: true
+    Invert Rainbow: false
+    Max Color: 255; 255; 255
+    Max Intensity: 4096
+    Min Color: 0; 0; 0
+    Min Intensity: 0
+    Name: ARUCO Points
+    Position Transformer: XYZ
+    Queue Size: 10
+    Selectable: true
+    Size (Pixels): 15
+    Size (m): 0.009999999776482582
+    Style: Points
+    Topic: /ov_msckf/points_aruco
+    Unreliable: false
+    Use Fixed Frame: true
+    Use rainbow: true
+    Value: true
+  - Alpha: 1
+    Autocompute Intensity Bounds: true
+    Autocompute Value Bounds:
+      Max Value: 10
+      Min Value: -10
       Value: true
-    - Alpha: 1
-      Buffer Length: 1
-      Class: rviz_default_plugins/Path
-      Color: 0; 255; 255
-      Enabled: true
-      Head Diameter: 0.30000001192092896
-      Head Length: 0.20000000298023224
-      Length: 0.30000001192092896
-      Line Style: Billboards
-      Line Width: 0.009999999776482582
-      Name: Path GT
-      Offset:
-        X: 0
-        Y: 0
-        Z: 0
-      Pose Color: 255; 85; 255
-      Pose Style: None
-      Radius: 0.029999999329447746
-      Shaft Diameter: 0.10000000149011612
-      Shaft Length: 0.10000000149011612
-      Topic: /ov_msckf/pathgt
-      Unreliable: false
+    Axis: Z
+    Channel Name: intensity
+    Class: rviz_default_plugins/PointCloud
+    Color: 255; 255; 255
+    Color Transformer: FlatColor
+    Decay Time: 0
+    Enabled: true
+    Invert Rainbow: false
+    Max Color: 255; 255; 255
+    Max Intensity: 4096
+    Min Color: 0; 0; 0
+    Min Intensity: 0
+    Name: ACTIVE Points
+    Position Transformer: XYZ
+    Queue Size: 10
+    Selectable: true
+    Size (Pixels): 3
+    Size (m): 0.009999999776482582
+    Style: Points
+    Topic: /ov_msckf/loop_feats
+    Unreliable: false
+    Use Fixed Frame: true
+    Use rainbow: true
+    Value: true
+  - Alpha: 1
+    Autocompute Intensity Bounds: true
+    Autocompute Value Bounds:
+      Max Value: 10
+      Min Value: -10
       Value: true
-    - Alpha: 0.800000011920929
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 252; 175; 62
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: MSCKF Points
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 8
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic: /ov_msckf/points_msckf
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
+    Axis: Z
+    Channel Name: intensity
+    Class: rviz_default_plugins/PointCloud2
+    Color: 255; 255; 127
+    Color Transformer: FlatColor
+    Decay Time: 0
+    Enabled: true
+    Invert Rainbow: false
+    Max Color: 255; 255; 255
+    Max Intensity: 4096
+    Min Color: 0; 0; 0
+    Min Intensity: 0
+    Name: SIM Points
+    Position Transformer: XYZ
+    Queue Size: 10
+    Selectable: true
+    Size (Pixels): 3
+    Size (m): 0.009999999776482582
+    Style: Points
+    Topic: /ov_msckf/points_sim
+    Unreliable: false
+    Use Fixed Frame: true
+    Use rainbow: true
+    Value: true
+  - Alpha: 1
+    Autocompute Intensity Bounds: true
+    Autocompute Value Bounds:
+      Max Value: 10
+      Min Value: -10
       Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 255; 0; 0
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: SLAM Points
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 8
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic: /ov_msckf/points_slam
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 117; 80; 123
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: ARUCO Points
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 15
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic: /ov_msckf/points_aruco
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud
-      Color: 255; 255; 255
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: ACTIVE Points
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic: /ov_msckf/loop_feats
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
-    - Alpha: 1
-      Autocompute Intensity Bounds: true
-      Autocompute Value Bounds:
-        Max Value: 10
-        Min Value: -10
-        Value: true
-      Axis: Z
-      Channel Name: intensity
-      Class: rviz_default_plugins/PointCloud2
-      Color: 255; 255; 127
-      Color Transformer: FlatColor
-      Decay Time: 0
-      Enabled: true
-      Invert Rainbow: false
-      Max Color: 255; 255; 255
-      Max Intensity: 4096
-      Min Color: 0; 0; 0
-      Min Intensity: 0
-      Name: SIM Points
-      Position Transformer: XYZ
-      Queue Size: 10
-      Selectable: true
-      Size (Pixels): 3
-      Size (m): 0.009999999776482582
-      Style: Points
-      Topic: /ov_msckf/points_sim
-      Unreliable: false
-      Use Fixed Frame: true
-      Use rainbow: true
-      Value: true
+    Axis: Z
+    Channel Name: intensity
+    Class: rviz_default_plugins/PointCloud2
+    Color: 255; 255; 255
+    Color Transformer: RGB8
+    Decay Time: 0
+    Enabled: true
+    Invert Rainbow: false
+    Max Color: 255; 255; 255
+    Max Intensity: 4096
+    Min Color: 0; 0; 0
+    Min Intensity: 0
+    Name: vio_mapping Debug
+    Position Transformer: XYZ
+    Queue Size: 10
+    Selectable: true
+    Size (Pixels): 5
+    Size (m): 0.009999999776482582
+    Style: Points
+    Topic: /mapping/debug_cloud
+    Unreliable: false
+    Use Fixed Frame: true
+    Use rainbow: true
+    Value: true
+  - Cell Color: 0; 0; 255
+    Class: octomap_rviz_plugins/OccupancyGrid
+    Color Mode: Flat
+    Enabled: false
+    Free Cell Color: 0; 255; 0
+    Name: vio_mapping Octomap
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /octomap_binary
+  - Class: rviz_default_plugins/Odometry
+    Color: 0; 255; 0
+    Covariance: false
+    Enabled: false
+    Name: OpenVINS Odometry (Green)
+    Position Tolerance: 0.1
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /ov_msckf/odomimu
+  - Class: rviz_default_plugins/PointCloud2
+    Color: 255; 0; 0
+    Color Transformer: FlatColor
+    Enabled: true
+    Name: OpenVINS Features (Red)
+    Size (Pixels): 3
+    Style: Points
+    Topic:
+      Depth: 5
+      Durability Policy: Volatile
+      History Policy: Keep Last
+      Reliability Policy: Reliable
+      Value: /ov_msckf/points_slam
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -292,18 +341,18 @@ Visualization Manager:
     Frame Rate: 60
   Name: root
   Tools:
-    - Class: rviz_default_plugins/MoveCamera
-    - Class: rviz_default_plugins/Select
-    - Class: rviz_default_plugins/FocusCamera
-    - Class: rviz_default_plugins/Measure
-      Line color: 128; 128; 0
-    - Class: rviz_default_plugins/SetInitialPose
-      Topic: /initialpose
-    - Class: rviz_default_plugins/SetGoal
-      Topic: /move_base_simple/goal
-    - Class: rviz_default_plugins/PublishPoint
-      Single click: true
-      Topic: /clicked_point
+  - Class: rviz_default_plugins/MoveCamera
+  - Class: rviz_default_plugins/Select
+  - Class: rviz_default_plugins/FocusCamera
+  - Class: rviz_default_plugins/Measure
+    Line color: 128; 128; 0
+  - Class: rviz_default_plugins/SetInitialPose
+    Topic: /initialpose
+  - Class: rviz_default_plugins/SetGoal
+    Topic: /move_base_simple/goal
+  - Class: rviz_default_plugins/PublishPoint
+    Single click: true
+    Topic: /clicked_point
   Transformation:
     Current:
       Class: rviz_default_plugins/TF
@@ -330,7 +379,7 @@ Visualization Manager:
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
       Yaw: 0.7853981852531433
-    Saved: ~
+    Saved: null
 Window Geometry:
   Current Depths:
     collapsed: false
