@@ -8,7 +8,7 @@ integration: "rk4"
 use_stereo: false
 max_cameras: 2
 
-calib_cam_extrinsics: true
+calib_cam_extrinsics: false
 calib_cam_intrinsics: false
 calib_cam_timeoffset: false
 calib_imu_intrinsics: false
