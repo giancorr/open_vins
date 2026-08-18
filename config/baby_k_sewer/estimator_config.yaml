@@ -1,0 +1,139 @@
+%YAML:1.0
+
+use_sim_time: true
+verbosity: "DEBUG"
+use_fej: true
+integration: "rk4"
+
+# use_stereo: false → cam0 (camera_down) e cam1 (camera_up) guardano in direzioni
+# ortogonali, nessuna sovrapposizione del campo visivo → tracking mono-camera separato.
+use_stereo: false
+max_cameras: 2
+
+calib_cam_extrinsics: false
+calib_cam_intrinsics: false
+calib_cam_timeoffset: false
+calib_imu_intrinsics: false
+calib_imu_g_sensitivity: false
+
+max_clones: 20
+max_slam: 150
+max_slam_in_update: 50
+max_msckf_in_update: 80
+dt_slam_delay: 3
+
+gravity_mag: 9.80
+
+# GLOBAL_FULL_INVERSE_DEPTH: più stabile numericamente di GLOBAL_3D quando
+# le feature provengono da un pavimento planare (camera_down sui cilindri).
+feat_rep_msckf: "GLOBAL_FULL_INVERSE_DEPTH"
+feat_rep_slam: "GLOBAL_FULL_INVERSE_DEPTH"
+feat_rep_aruco: "GLOBAL_3D"
+
+try_zupt: true
+zupt_chi2_multipler: 3
+zupt_max_velocity: 0.05
+zupt_noise_multiplier: 50
+zupt_max_disparity: 3.0
+zupt_only_at_beginning: true
+
+# ─── Inizializzazione ──────────────────────────────────────────────────────────
+# Inizializzazione DINAMICA: aspetta che il drone accumuli 0.5° di rotazione IMU
+# prima di inizializzare. Questo avviene durante lo spin-up dei motori (arming)
+# senza che il drone decoli fisicamente.
+#
+# Perché NON usare l'init STATICO:
+#   L'init statico (init_dyn_use: false) inizializza da singola vista → le profondità
+#   delle feature sono stimate senza parallasse → valori errati. Quando il drone
+#   decolla, i residui sulle feature sono alti → chi2 test le marginalizza →
+#   poche feature → divergenza.
+#
+# Perché l'init DINAMICO funziona qui (nonostante il TF gate):
+#   Il test node aspetta il TF map→base_link per fare il takeoff. Con init_dyn,
+#   OpenVINS inizializza durante le vibrazioni dell'arming (motori in spin-up),
+#   pubblica il TF, e solo DOPO il drone decolla. Baseline di moto sufficiente
+#   per triangolare le feature correttamente.
+#   init_dyn_min_deg: 0.5 → mezzo grado di rotazione IMU integrata è sufficiente
+#   per avere un baseline utile alla triangolazione dei cilindri a 1.8m.
+init_window_time: 1.0
+init_imu_thresh: 0.50
+init_max_disparity: 3.0
+init_max_features: 75
+
+init_dyn_use: true
+init_dyn_mle_opt_calib: false
+init_dyn_mle_max_iter: 50
+init_dyn_mle_max_time: 0.5
+init_dyn_mle_max_threads: 6
+init_dyn_num_pose: 6
+init_dyn_min_deg: 0.5
+
+init_dyn_inflation_ori: 10
+init_dyn_inflation_vel: 100
+init_dyn_inflation_bg: 10
+init_dyn_inflation_ba: 100
+init_dyn_min_rec_cond: 1e-15
+
+init_dyn_bias_g: [0.0, 0.0, 0.0]
+init_dyn_bias_a: [0.0, 0.0, 0.0]
+
+record_timing_information: false
+record_timing_filepath: "/tmp/traj_timing.txt"
+
+save_total_state: false
+filepath_est: "/tmp/ov_estimate.txt"
+filepath_std: "/tmp/ov_estimate_std.txt"
+filepath_gt: "/tmp/ov_groundtruth.txt"
+
+# ─── Feature tracking ──────────────────────────────────────────────────────────
+# klt_win_size: 15 (era 30)
+#   A X=0..2m, camera_up vede il muro a 4.6-6.9m di distanza. Con v=0.5m/s e
+#   track_frequency=10Hz, la parallasse per frame è 3.4-5px. Una finestra KLT di
+#   30px è troppo grande rispetto al segnale (rapporto finestra/spostamento=10x):
+#   l'ottimizzatore converge in un minimo spuro. Con 15px il rapporto scende a 5x,
+#   più vicino all'ideale (3-4x).
+# track_frequency: 10 Hz (era 20 Hz)
+#   Dimezza la frequenza di processing per RADDOPPIARE il baseline inter-frame
+#   (parallasse 3.4-5px invece di 1.7-2.5px). Al di sopra di 3px KLT è affidabile.
+#   Effetto collaterale: si usano metà dei frame, ma IMU integra comunque a 250Hz.
+use_klt: true
+klt_win_size: 15
+klt_max_iter: 25
+klt_max_level: 5
+num_pts: 300
+fast_threshold: 20
+grid_x: 8
+grid_y: 8
+min_px_dist: 15
+knn_ratio: 0.70
+track_frequency: 10.0
+downsample_cameras: false
+num_opencv_threads: 2
+histogram_method: "HISTOGRAM"
+
+use_aruco: false
+num_aruco: 1024
+downsize_aruco: true
+
+up_msckf_sigma_px: 2
+up_msckf_chi2_multipler: 3
+up_slam_sigma_px: 2
+up_slam_chi2_multipler: 3
+up_aruco_sigma_px: 1
+up_aruco_chi2_multipler: 1
+
+use_mask: false
+
+relative_config_imu: "kalibr_imu_chain.yaml"
+relative_config_imucam: "kalibr_imucam_chain.yaml"
+
+sim_seed_state_init: 0
+sim_seed_preturb: 0
+sim_seed_measurements: 0
+sim_do_perturbation: false
+sim_traj_path: "src/open_vins/ov_data/sim/tum_corridor1_512_16_okvis.txt"
+sim_distance_threshold: 1.1
+sim_freq_cam: 10
+sim_freq_imu: 400
+sim_min_feature_gen_dist: 5.0
+sim_max_feature_gen_dist: 7.0
