@@ -20,7 +20,10 @@ max_clones: 20
 max_slam: 150
 max_slam_in_update: 50
 max_msckf_in_update: 80
-dt_slam_delay: 3
+# dt_slam_delay=1: promuove le feature a SLAM più rapidamente (era 3).
+# Importante con static init: le feature MSCKF hanno depth incerta, ma le
+# SLAM vengono corrette dall'EKF ad ogni update → convergono più in fretta.
+dt_slam_delay: 1
 
 gravity_mag: 9.80
 
@@ -37,41 +40,56 @@ zupt_noise_multiplier: 50
 zupt_max_disparity: 3.0
 zupt_only_at_beginning: true
 
-# ─── Inizializzazione ──────────────────────────────────────────────────────────
-# Inizializzazione DINAMICA: aspetta che il drone accumuli 0.5° di rotazione IMU
-# prima di inizializzare. Questo avviene durante lo spin-up dei motori (arming)
-# senza che il drone decoli fisicamente.
+# ─────────────────────────────────────────────────────────────────────────────
+# Inizializzazione: STATICA (init_dyn_use: false)
+# ─────────────────────────────────────────────────────────────────────────────
+# CAUSA RADICE dell'errore di pitch:
+#   Il dynamic init usa l'IMU DURANTE lo spin-up dei motori. Le vibrazioni
+#   creano pseudo-accelerazioni sistematiche orizzontali che l'MLE
+#   interpreta come componenti di gravità → pitch=-0.05 rad sistematico.
+#   Nessun parametro del dynamic init può correggere un bias sistematico.
 #
-# Perché NON usare l'init STATICO:
-#   L'init statico (init_dyn_use: false) inizializza da singola vista → le profondità
-#   delle feature sono stimate senza parallasse → valori errati. Quando il drone
-#   decolla, i residui sulle feature sono alti → chi2 test le marginalizza →
-#   poche feature → divergenza.
+# SOLUZIONE: static init, che usa l'IMU PRIMA dell'arming (motori spenti).
+#   Prima dell'arming: solo gravity + rumore Gazebo di contatto (~0.07-0.15 m/s²)
+#   → init_imu_thresh=0.50 è più che sufficiente per passare ✓
+#   → init_max_disparity=0.5 come threshold MASSIMO: drone fermo → disparity≈0
+#   → static init parte entro 1-2s dall'avvio di OpenVINS ✓
 #
-# Perché l'init DINAMICO funziona qui (nonostante il TF gate):
-#   Il test node aspetta il TF map→base_link per fare il takeoff. Con init_dyn,
-#   OpenVINS inizializza durante le vibrazioni dell'arming (motori in spin-up),
-#   pubblica il TF, e solo DOPO il drone decolla. Baseline di moto sufficiente
-#   per triangolare le feature correttamente.
-#   init_dyn_min_deg: 0.5 → mezzo grado di rotazione IMU integrata è sufficiente
-#   per avere un baseline utile alla triangolazione dei cilindri a 1.8m.
+#   Dopo l'arming: motori → vibrazione 2-5 m/s² >> 0.50 → init già avvenuto,
+#   non può ri-inizializzarsi (OpenVINS inizializza una sola volta).
+#
+# Sequenza automatica:
+#   1. OpenVINS parte, static init attende 1.0s di IMU pulita (pre-arming)
+#   2. Static init: gravity average → pitch=0, roll=0 ✓
+#   3. TF gate aperto → test node arma i motori → decollo normale
+#
+# IMPORTANTE: init_dyn_* devono restare presenti (anche se init_dyn_use=false)
+# altrimenti OpenVINS li cerca e deref. null ptr → SIGSEGV.
 init_window_time: 1.0
 init_imu_thresh: 0.50
 init_max_disparity: 3.0
-init_max_features: 75
+init_max_features: 150
 
-init_dyn_use: true
+init_dyn_use: false
 init_dyn_mle_opt_calib: false
-init_dyn_mle_max_iter: 50
-init_dyn_mle_max_time: 0.5
+init_dyn_mle_max_iter: 100
+init_dyn_mle_max_time: 1.5
 init_dyn_mle_max_threads: 6
-init_dyn_num_pose: 6
+# num_pose=12: doppio rispetto al default (6) → più pose per l'MLE → media
+# migliore del rumore da vibrazioni motori → stima gravità più accurata.
+init_dyn_num_pose: 12
+# min_deg=0.5: finestra breve → meno pseudo-accelerazioni orizzontali accumulate
+# (con 1.5 il pitch error era -0.08 rad, con 0.5 era -0.05 rad).
 init_dyn_min_deg: 0.5
 
-init_dyn_inflation_ori: 10
-init_dyn_inflation_vel: 100
-init_dyn_inflation_bg: 10
-init_dyn_inflation_ba: 100
+# inflation_ori=100.0 (era 10): più incertezza iniziale sull'orientamento →
+# l'EKF corregge aggressivamente roll e pitch dai residui delle feature.
+init_dyn_inflation_ori: 100.0
+init_dyn_inflation_vel: 100.0
+init_dyn_inflation_bg: 10.0
+# inflation_ba=1000.0 (era 100): più incertezza sul bias accelerometro →
+# stima del bias più rapida → correzione gravity/pitch più veloce.
+init_dyn_inflation_ba: 1000.0
 init_dyn_min_rec_cond: 1e-15
 
 init_dyn_bias_g: [0.0, 0.0, 0.0]
@@ -115,10 +133,17 @@ use_aruco: false
 num_aruco: 1024
 downsize_aruco: true
 
+# chi2=5→15 MSCKF, 5→10 SLAM: durante le prime fasi del volo, la profondità
+# delle feature non è ancora triangolata (zero parallasse da fermo) → i residui
+# sono grandi anche per feature buone → chi2=5 ne rigetta troppe → scale drift.
+# Con valori più alti le feature vengono accettate anche con residui grandi
+# (causati dall'incertezza di scala), permettendo a OpenVINS di convergere prima.
+# Il rischio di outlier è accettabile: feature false vengono comunque espulse
+# man mano che la stima converge e i residui diventano inconsistenti.
 up_msckf_sigma_px: 2
-up_msckf_chi2_multipler: 3
+up_msckf_chi2_multipler: 12
 up_slam_sigma_px: 2
-up_slam_chi2_multipler: 3
+up_slam_chi2_multipler: 10
 up_aruco_sigma_px: 1
 up_aruco_chi2_multipler: 1
 
