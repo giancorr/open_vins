@@ -45,6 +45,14 @@ Visualization Manager:
     Frame Timeout: 120
     Frames:
       All Enabled: true
+      baby_k_0/OakD-Lite/base_link/IMX214:
+        Value: false
+      baby_k_0/OakD-Lite/base_link/StereoOV7251:
+        Value: false
+      base_link_FRD:
+        Value: false
+      base_link:
+        Value: false
       goal1:
         Value: false
       goal2:

@@ -5,8 +5,6 @@ verbosity: "DEBUG"
 use_fej: true
 integration: "rk4"
 
-# use_stereo: false → cam0 (camera_down) e cam1 (camera_up) guardano in direzioni
-# ortogonali, nessuna sovrapposizione del campo visivo → tracking mono-camera separato.
 use_stereo: false
 max_cameras: 2
 
@@ -20,15 +18,10 @@ max_clones: 20
 max_slam: 150
 max_slam_in_update: 50
 max_msckf_in_update: 80
-# dt_slam_delay=1: promuove le feature a SLAM più rapidamente (era 3).
-# Importante con static init: le feature MSCKF hanno depth incerta, ma le
-# SLAM vengono corrette dall'EKF ad ogni update → convergono più in fretta.
 dt_slam_delay: 1
 
 gravity_mag: 9.80
 
-# GLOBAL_FULL_INVERSE_DEPTH: più stabile numericamente di GLOBAL_3D quando
-# le feature provengono da un pavimento planare (camera_down sui cilindri).
 feat_rep_msckf: "GLOBAL_FULL_INVERSE_DEPTH"
 feat_rep_slam: "GLOBAL_FULL_INVERSE_DEPTH"
 feat_rep_aruco: "GLOBAL_3D"
@@ -40,31 +33,6 @@ zupt_noise_multiplier: 50
 zupt_max_disparity: 3.0
 zupt_only_at_beginning: true
 
-# ─────────────────────────────────────────────────────────────────────────────
-# Inizializzazione: STATICA (init_dyn_use: false)
-# ─────────────────────────────────────────────────────────────────────────────
-# CAUSA RADICE dell'errore di pitch:
-#   Il dynamic init usa l'IMU DURANTE lo spin-up dei motori. Le vibrazioni
-#   creano pseudo-accelerazioni sistematiche orizzontali che l'MLE
-#   interpreta come componenti di gravità → pitch=-0.05 rad sistematico.
-#   Nessun parametro del dynamic init può correggere un bias sistematico.
-#
-# SOLUZIONE: static init, che usa l'IMU PRIMA dell'arming (motori spenti).
-#   Prima dell'arming: solo gravity + rumore Gazebo di contatto (~0.07-0.15 m/s²)
-#   → init_imu_thresh=0.50 è più che sufficiente per passare ✓
-#   → init_max_disparity=0.5 come threshold MASSIMO: drone fermo → disparity≈0
-#   → static init parte entro 1-2s dall'avvio di OpenVINS ✓
-#
-#   Dopo l'arming: motori → vibrazione 2-5 m/s² >> 0.50 → init già avvenuto,
-#   non può ri-inizializzarsi (OpenVINS inizializza una sola volta).
-#
-# Sequenza automatica:
-#   1. OpenVINS parte, static init attende 1.0s di IMU pulita (pre-arming)
-#   2. Static init: gravity average → pitch=0, roll=0 ✓
-#   3. TF gate aperto → test node arma i motori → decollo normale
-#
-# IMPORTANTE: init_dyn_* devono restare presenti (anche se init_dyn_use=false)
-# altrimenti OpenVINS li cerca e deref. null ptr → SIGSEGV.
 init_window_time: 1.0
 init_imu_thresh: 0.50
 init_max_disparity: 3.0
@@ -75,20 +43,12 @@ init_dyn_mle_opt_calib: false
 init_dyn_mle_max_iter: 100
 init_dyn_mle_max_time: 1.5
 init_dyn_mle_max_threads: 6
-# num_pose=12: doppio rispetto al default (6) → più pose per l'MLE → media
-# migliore del rumore da vibrazioni motori → stima gravità più accurata.
 init_dyn_num_pose: 12
-# min_deg=0.5: finestra breve → meno pseudo-accelerazioni orizzontali accumulate
-# (con 1.5 il pitch error era -0.08 rad, con 0.5 era -0.05 rad).
 init_dyn_min_deg: 0.5
 
-# inflation_ori=100.0 (era 10): più incertezza iniziale sull'orientamento →
-# l'EKF corregge aggressivamente roll e pitch dai residui delle feature.
 init_dyn_inflation_ori: 100.0
 init_dyn_inflation_vel: 100.0
 init_dyn_inflation_bg: 10.0
-# inflation_ba=1000.0 (era 100): più incertezza sul bias accelerometro →
-# stima del bias più rapida → correzione gravity/pitch più veloce.
 init_dyn_inflation_ba: 1000.0
 init_dyn_min_rec_cond: 1e-15
 
@@ -103,17 +63,6 @@ filepath_est: "/tmp/ov_estimate.txt"
 filepath_std: "/tmp/ov_estimate_std.txt"
 filepath_gt: "/tmp/ov_groundtruth.txt"
 
-# ─── Feature tracking ──────────────────────────────────────────────────────────
-# klt_win_size: 15 (era 30)
-#   A X=0..2m, camera_up vede il muro a 4.6-6.9m di distanza. Con v=0.5m/s e
-#   track_frequency=10Hz, la parallasse per frame è 3.4-5px. Una finestra KLT di
-#   30px è troppo grande rispetto al segnale (rapporto finestra/spostamento=10x):
-#   l'ottimizzatore converge in un minimo spuro. Con 15px il rapporto scende a 5x,
-#   più vicino all'ideale (3-4x).
-# track_frequency: 10 Hz (era 20 Hz)
-#   Dimezza la frequenza di processing per RADDOPPIARE il baseline inter-frame
-#   (parallasse 3.4-5px invece di 1.7-2.5px). Al di sopra di 3px KLT è affidabile.
-#   Effetto collaterale: si usano metà dei frame, ma IMU integra comunque a 250Hz.
 use_klt: true
 klt_win_size: 15
 klt_max_iter: 25
@@ -133,13 +82,6 @@ use_aruco: false
 num_aruco: 1024
 downsize_aruco: true
 
-# chi2=5→15 MSCKF, 5→10 SLAM: durante le prime fasi del volo, la profondità
-# delle feature non è ancora triangolata (zero parallasse da fermo) → i residui
-# sono grandi anche per feature buone → chi2=5 ne rigetta troppe → scale drift.
-# Con valori più alti le feature vengono accettate anche con residui grandi
-# (causati dall'incertezza di scala), permettendo a OpenVINS di convergere prima.
-# Il rischio di outlier è accettabile: feature false vengono comunque espulse
-# man mano che la stima converge e i residui diventano inconsistenti.
 up_msckf_sigma_px: 2
 up_msckf_chi2_multipler: 12
 up_slam_sigma_px: 2
@@ -162,3 +104,4 @@ sim_freq_cam: 10
 sim_freq_imu: 400
 sim_min_feature_gen_dist: 5.0
 sim_max_feature_gen_dist: 7.0
+publish_tf: true

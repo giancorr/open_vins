@@ -91,7 +91,6 @@ up_aruco_chi2_multipler: 1
 
 use_mask: false
 
-# Percorsi ASSOLUTI per non far impazzire ROS 2
 relative_config_imu: "kalibr_imu_chain.yaml"
 relative_config_imucam: "kalibr_imucam_chain.yaml"
 
