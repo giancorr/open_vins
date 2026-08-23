@@ -22,19 +22,19 @@ dt_slam_delay: 1
 
 gravity_mag: 9.80
 
-feat_rep_msckf: "GLOBAL_FULL_INVERSE_DEPTH"
-feat_rep_slam: "GLOBAL_FULL_INVERSE_DEPTH"
+feat_rep_msckf: "GLOBAL_3D"
+feat_rep_slam: "GLOBAL_3D"
 feat_rep_aruco: "GLOBAL_3D"
 
 try_zupt: true
 zupt_chi2_multipler: 3
 zupt_max_velocity: 0.05
 zupt_noise_multiplier: 50
-zupt_max_disparity: 3.0
+zupt_max_disparity: 1.5
 zupt_only_at_beginning: true
 
-init_window_time: 1.0
-init_imu_thresh: 0.50
+init_window_time: 3.0
+init_imu_thresh: 0.20
 init_max_disparity: 3.0
 init_max_features: 150
 
@@ -64,16 +64,16 @@ filepath_std: "/tmp/ov_estimate_std.txt"
 filepath_gt: "/tmp/ov_groundtruth.txt"
 
 use_klt: true
-klt_win_size: 15
+klt_win_size: 25
 klt_max_iter: 25
 klt_max_level: 5
 num_pts: 300
-fast_threshold: 20
+fast_threshold: 10
 grid_x: 8
 grid_y: 8
 min_px_dist: 15
 knn_ratio: 0.70
-track_frequency: 10.0
+track_frequency: 20.0
 downsample_cameras: false
 num_opencv_threads: 2
 histogram_method: "HISTOGRAM"
@@ -83,9 +83,9 @@ num_aruco: 1024
 downsize_aruco: true
 
 up_msckf_sigma_px: 2
-up_msckf_chi2_multipler: 12
+up_msckf_chi2_multipler: 5
 up_slam_sigma_px: 2
-up_slam_chi2_multipler: 10
+up_slam_chi2_multipler: 5
 up_aruco_sigma_px: 1
 up_aruco_chi2_multipler: 1
 
