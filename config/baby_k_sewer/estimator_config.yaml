@@ -68,7 +68,7 @@ klt_win_size: 25
 klt_max_iter: 25
 klt_max_level: 5
 num_pts: 300
-fast_threshold: 10
+fast_threshold: 15
 grid_x: 8
 grid_y: 8
 min_px_dist: 15
